@@ -155,7 +155,6 @@ async function report() {
 app.event('message', async (body) => {
 	try {
 		let e = body.event;
-		console.log('okay it works');
 		if (typeof e.subtype === "undefined" && /\d/.test(e.text[0])) {
 			let number = extractNumber(e.text);
 			let ts = e.ts;
