@@ -4,7 +4,7 @@ const keep_alive = require('./keep_alive.js')
 const schedule = require('node-schedule');
 const moment = require('moment');
 const token = process.env.SLACK_BOT_TOKEN;
-const channel = "CDJMS683D";
+const channel = "CDJMS683D"; //'C017W4PHYKS' for debugging, "CDJMS683D" actual
 const Airtable = require('airtable');
 Airtable.configure({
 	endpointUrl: 'https://api.airtable.com',
@@ -155,6 +155,7 @@ async function report() {
 app.event('message', async (body) => {
 	try {
 		let e = body.event;
+		console.log('okay it works');
 		if (typeof e.subtype === "undefined" && /\d/.test(e.text[0])) {
 			let number = extractNumber(e.text);
 			let ts = e.ts;
