@@ -154,7 +154,7 @@ async function report() {
 		let messageWithCelebration = ":tada: YAY! We've went past " + pastThousandsGoal + "! :tada: \n" + message;
 		publishMessage(channel, messageWithCelebration); //'C017W4PHYKS' for debugging, channel for actual
 	} else {
-		publishMessage('C017W4PHYKS', message); //'C017W4PHYKS' for debugging, channel for actual
+		publishMessage(channel, message); //'C017W4PHYKS' for debugging, channel for actual
 	}
 
 }
@@ -186,7 +186,7 @@ app.event('message', async (body) => {
 	// Start your app
 	try {
 		await app.start(process.env.PORT || 3000);
-		let j = schedule.scheduleJob('*/1 * * * *', report); // */1 * * * * for debugging, 0 0 * * * actual
+		let j = schedule.scheduleJob('0 0 * * *', report); // */1 * * * * for debugging, 0 0 * * * actual
 		publishMessage('C017W4PHYKS', 'running every midnight!')
 	} catch (error) {
 		console.error(error);
