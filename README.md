@@ -14,5 +14,6 @@ It also adds an emoji reaction at every number ending with 69, every 1000, and e
 - [moment.js](https://momentjs.com/)
 - [node-schedule](https://www.npmjs.com/package/node-schedule)
 - [Slack's Bolt API](https://slack.dev/bolt-js/tutorial/getting-started)
+- [Airtable](https://airtable.com/api)
 
 \ ゜ o ゜)ノ

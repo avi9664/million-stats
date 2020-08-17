@@ -4,7 +4,7 @@ const keep_alive = require('./keep_alive.js')
 const schedule = require('node-schedule');
 const moment = require('moment');
 const token = process.env.SLACK_BOT_TOKEN;
-const channel = "CDJMS683D"; //'C017W4PHYKS' for debugging, "CDJMS683D" actual
+const channel = "CDJMS683D"; 
 const Airtable = require('airtable');
 Airtable.configure({
 	endpointUrl: 'https://api.airtable.com',
@@ -116,9 +116,16 @@ async function report() {
 	latest = await fetchLatest(channel);
 	let diff = latest - oldest;
 	speedArr.push(diff);
-	// base('increase').create({
-	// 	"Date": 
-	// })
+	base('increase').create({
+		"Date": moment().format("YYYY-MM-DD"),
+		"increase": diff
+	}, function(err, record) {
+		if (err) {
+			console.error(err);
+			return;
+		}
+		console.log(record.getId());
+	})
 	averageSpeed = findMean(speedArr).toFixed(3);
 	let thousandsGoal = Math.ceil(latest / 1000) * 1000;
 	let thousandsTime = predictTime(thousandsGoal)
@@ -143,13 +150,13 @@ async function report() {
 		" *" +
 		tenThousandsTime +
 		"* \n :fastparrot: KEEP IT GOING GUYS!";
-		if (pastThousandsGoal > oldest && pastThousandsGoal <= newest) {
-			let messageWithCelebration = ":tada: YAY! We've went past " + pastThousandsGoal + "! :tada: \n" + message;
-			publishMessage(channel, messageWithCelebration);
-		} else {
-			publishMessage(channel,message);
-		}
-	
+	if (pastThousandsGoal > oldest && pastThousandsGoal <= newest) {
+		let messageWithCelebration = ":tada: YAY! We've went past " + pastThousandsGoal + "! :tada: \n" + message;
+		publishMessage(channel, messageWithCelebration); //'C017W4PHYKS' for debugging, channel for actual
+	} else {
+		publishMessage('C017W4PHYKS', message); //'C017W4PHYKS' for debugging, channel for actual
+	}
+
 }
 
 app.event('message', async (body) => {
@@ -179,7 +186,7 @@ app.event('message', async (body) => {
 	// Start your app
 	try {
 		await app.start(process.env.PORT || 3000);
-		let j = schedule.scheduleJob('0 0 * * *', report); // */1 * * * * for debugging, 0 0 * * * actual
+		let j = schedule.scheduleJob('*/1 * * * *', report); // */1 * * * * for debugging, 0 0 * * * actual
 		publishMessage('C017W4PHYKS', 'running every midnight!')
 	} catch (error) {
 		console.error(error);
