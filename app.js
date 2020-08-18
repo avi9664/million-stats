@@ -111,22 +111,42 @@ function predictTime(goal) {
 	return moment(unix).fromNow();
 }
 
-async function report() {
-	let oldest = await fetchOldest(channel);
-	latest = await fetchLatest(channel);
-	let diff = latest - oldest;
-	speedArr.push(diff);
-	base('increase').create({
-		"Date": moment().format("YYYY-MM-DD"),
-		"increase": diff
-	}, function(err, record) {
+async function addData(db, object) {
+	base(db).create(object, function(err, record){
 		if (err) {
 			console.error(err);
 			return;
 		}
-		console.log(record.getId());
+		// console.log(record.getId());
 	})
-	averageSpeed = findMean(speedArr).toFixed(3);
+}
+
+async function getStats() {
+	try {
+		let obj = await base('stats').find('rec2XI8QAsPr7EMVB');
+		return {
+        id: obj.id,
+        fields: obj.fields,
+    };
+	} catch (error) {
+		console.error(error)
+	}
+}
+
+async function report() {
+	let oldest = await fetchOldest(channel);
+	latest = await fetchLatest(channel);
+	let diff = latest - oldest;
+	addData('increase', {
+		"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
+		"increase": diff,
+		"stats": [
+        "rec2XI8QAsPr7EMVB"
+      ]
+	})
+	let newStats = await getStats();
+	console.log(newStats.fields);
+	averageSpeed = newStats.fields.average.toFixed(3);
 	let thousandsGoal = Math.ceil(latest / 1000) * 1000;
 	let thousandsTime = predictTime(thousandsGoal)
 	let tenThousandsGoal = Math.ceil(latest / 5000) * 5000;
@@ -157,7 +177,7 @@ async function report() {
 		publishMessage(channel, message); //'C017W4PHYKS' for debugging, channel for actual
 	}
 
-}
+};
 
 app.event('message', async (body) => {
 	try {
@@ -186,7 +206,7 @@ app.event('message', async (body) => {
 	// Start your app
 	try {
 		await app.start(process.env.PORT || 3000);
-		let j = schedule.scheduleJob('0 0 * * *', report); // */1 * * * * for debugging, 0 0 * * * actual
+		let j = schedule.scheduleJob('0 0 * * *', report); // */15 * * * * * for debugging, 0 0 * * * actual
 		publishMessage('C017W4PHYKS', 'running every midnight!')
 	} catch (error) {
 		console.error(error);
