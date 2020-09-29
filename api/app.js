@@ -135,7 +135,7 @@ async function getStats() {
 
 async function report() {
 	let oldest = await fetchOldest(channel);
-	latest = await fetchLatest(channel);
+	let latest = await fetchLatest(channel);
 	let diff = latest - oldest;
 	addData('increase', {
 		"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
@@ -170,7 +170,7 @@ async function report() {
 		" *" +
 		tenThousandsTime +
 		"* \n :fastparrot: KEEP IT GOING GUYS!";
-	if (pastThousandsGoal > oldest && pastThousandsGoal <= newest) {
+	if (pastThousandsGoal > oldest && pastThousandsGoal <= latest) {
 		let messageWithCelebration = ":tada: YAY! We've went past " + pastThousandsGoal + "! :tada: \n" + message;
 		publishMessage(channel, messageWithCelebration); //'C017W4PHYKS' for debugging, channel for actual
 	} else {

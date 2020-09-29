@@ -1,2 +1,2 @@
 language = "nodejs"
-run = "node app.js"
+run = "node api/app.js"
