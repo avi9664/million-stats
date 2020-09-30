@@ -105,12 +105,6 @@ function findMean(arr) {
 	return totalSum / arr.length;
 }
 
-function predictTime(goal) {
-	let daysLeft = (goal - latest) / averageSpeed
-	let unix = new Date(Date.now() + daysLeft * 86400000)
-	return moment(unix).fromNow();
-}
-
 async function addData(db, object) {
 	base(db).create(object, function(err, record){
 		if (err) {
@@ -137,21 +131,20 @@ async function report() {
 	let oldest = await fetchOldest(channel);
 	let latest = await fetchLatest(channel);
 	let diff = latest - oldest;
-	addData('increase', {
-		"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
-		"increase": diff,
-		"stats": [
-        "rec2XI8QAsPr7EMVB"
-      ]
-	})
+	// addData('increase', {
+	// 	"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
+	// 	"increase": diff,
+	// 	"stats": [
+  //       "rec2XI8QAsPr7EMVB"
+  //     ]
+	// })
 	let newStats = await getStats();
-	console.log(newStats.fields);
 	averageSpeed = newStats.fields.average.toFixed(3);
 	let thousandsGoal = Math.ceil(latest / 1000) * 1000;
-	let thousandsTime = predictTime(thousandsGoal)
+	let thousandsTime = predictTime(thousandsGoal, latest);
 	let tenThousandsGoal = Math.ceil(latest / 5000) * 5000;
 	let pastThousandsGoal = Math.floor(latest / 1000) * 1000;
-	let tenThousandsTime = predictTime(tenThousandsGoal)
+	let tenThousandsTime = predictTime(tenThousandsGoal, latest);
 	let message =
 		"Nice! Today we've went from *" +
 		oldest +
@@ -178,6 +171,12 @@ async function report() {
 	}
 
 };
+
+function predictTime(goal, recent) {
+	let daysLeft = (goal - recent) / averageSpeed;
+	let unix = new Date(Date.now() + daysLeft * 86400000);
+	return moment(unix).fromNow();
+}
 
 app.event('message', async (body) => {
 	try {
