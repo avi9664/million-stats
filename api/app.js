@@ -3,8 +3,9 @@ const { App } = require("@slack/bolt");
 const keep_alive = require('./keep_alive.js')
 const schedule = require('node-schedule');
 const moment = require('moment');
+const main = "CDJMS683D";
+const thread = "C01BZ7V0207";
 const token = process.env.SLACK_BOT_TOKEN;
-const channel = "CDJMS683D"; 
 const Airtable = require('airtable');
 Airtable.configure({
 	endpointUrl: 'https://api.airtable.com',
@@ -62,11 +63,15 @@ async function fetchOldest(id) {
 
 async function publishMessage(id, text) {
 	try {
-		const result = await app.client.chat.postMessage({
-			token: token,
-			channel: id,
-			text: text
-		});
+		let options = {
+				token: token,
+				channel: id,
+				text: text
+			}
+		if (id == "CDJMS683D") {
+			options['thread_ts'] = 1602496865003000
+		}
+		const result = await app.client.chat.postMessage(options);
 	} catch (error) {
 		console.error(error);
 	}
@@ -106,7 +111,7 @@ function findMean(arr) {
 }
 
 async function addData(db, object) {
-	base(db).create(object, function(err, record){
+	base(db).create(object, function(err, record) {
 		if (err) {
 			console.error(err);
 			return;
@@ -115,30 +120,35 @@ async function addData(db, object) {
 	})
 }
 
-async function getStats() {
+async function getStats(id) {
 	try {
-		let obj = await base('stats').find('rec2XI8QAsPr7EMVB');
+		if (id == "CDJMS683D") {
+			let obj = await base('stats').find('rec2XI8QAsPr7EMVB');
+		} else if (id == "C01BZ7V0207") {
+			let obj = await base('thread stats').find('recBljY8vBdaNK8kq');
+		}
 		return {
-        id: obj.id,
-        fields: obj.fields,
-    };
+			id: obj.id,
+			fields: obj.fields,
+		};
 	} catch (error) {
 		console.error(error)
 	}
 }
 
-async function report() {
+async function report(channel) {
 	let oldest = await fetchOldest(channel);
 	let latest = await fetchLatest(channel);
 	let diff = latest - oldest;
-	// addData('increase', {
-	// 	"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
-	// 	"increase": diff,
-	// 	"stats": [
-  //       "rec2XI8QAsPr7EMVB"
-  //     ]
-	// })
-	let newStats = await getStats();
+	let db = channel == "CDJMS683D" ? 'increase' : 'thread';
+	addData(db, {
+		"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
+		"increase": diff,
+		"stats": [
+			"rec2XI8QAsPr7EMVB"
+		]
+	});
+	let newStats = await getStats(channel);
 	averageSpeed = newStats.fields.average.toFixed(3);
 	let thousandsGoal = Math.ceil(latest / 1000) * 1000;
 	let thousandsTime = predictTime(thousandsGoal, latest);
@@ -205,9 +215,10 @@ app.event('message', async (body) => {
 	// Start your app
 	try {
 		await app.start(process.env.PORT || 3000);
-		let j = schedule.scheduleJob('0 0 * * *', report); // */15 * * * * * for debugging, 0 0 * * * actual
-		publishMessage('C017W4PHYKS', 'running every midnight!')
+		let j = schedule.scheduleJob('0 0 * * *', () => { report(main) }); // */15 * * * * * for debugging, 0 0 * * * actual
+		let k = schedule.scheduleJob('0 0 * * *', () => { report(thread) });
 	} catch (error) {
 		console.error(error);
+		publishMessage('C017W4PHYKS', error)
 	}
 })();
