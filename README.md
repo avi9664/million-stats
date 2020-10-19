@@ -1,8 +1,9 @@
 # Million Stats
 
-This is an app for the #counttoamillion channel in Hack Club's Slack workspace. You can also clone this for anything that involves counting to a very high number :)
-Every midnight, it gives a report on the progress the channel's made and the average daily speed:
-![shows the day's increase, the average daily speed, and the predicted amount of time needed to reach the next thousand/tenthousand](https://cdn.glitch.com/95c2faf1-779e-4e08-b219-8a122cdceefe%2Fbotdemo.png?v=1594948839444)
+This is an app for the #counttoamillion channel in Hack Club's Slack workspace, where you and a team of other cool kids together try to count to a million, base ten, by ones. No one can count consecutively. No purpose, just a fun team-building game :)
+
+Every midnight, the bot gives a report on the progress the channel's made and the average daily speed:
+![a couple of messages from different people showing numbers going the day's increase, the average daily speed, and the predicted amount of time needed to reach the next thousand/tenthousand](./counttoamillion.png)
 
 ## Modifying this thing
 

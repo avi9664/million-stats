@@ -33,12 +33,24 @@ function extractNumber(txt) {
 
 async function fetchLatest(id) {
 	try {
-		const result = await app.client.conversations.history({
-			token: token,
-			channel: id,
-			limit: 1,
-		});
-		const number = extractNumber(result.messages[0].text)
+		if (id == "CDJMS683D") {
+			result = await app.client.conversations.history({
+				token: token,
+				channel: id,
+				limit: 1
+			});
+		} else if (id == "C01BZ7V0207") {
+			result = await app.client.conversations.replies({
+				token: token,
+				channel: id,
+				ts: '1602496865.003000',
+				// thread_ts: 1602496865,
+				limit: 1
+			});
+		}
+		let index = id == "CDJMS683D" ? 0 : 1
+		const number = extractNumber(result.messages[index].text);
+		// console.log(number);
 		return number;
 	} catch (error) {
 		console.error(error);
@@ -48,13 +60,27 @@ async function fetchLatest(id) {
 async function fetchOldest(id) {
 	try {
 		let last24Hrs;
-		const result = await app.client.conversations.history({
-			token: token,
-			channel: id,
-			oldest: Math.floor(Date.now() / 1000) - 86400, //debug: 1596326400, actual: Math.floor(Date.now() / 1000) - 86400
-			inclusive: false
-		});
-		const number = extractNumber(result.messages[result.messages.length - 2].text);
+		let result;
+		if (id == "CDJMS683D") {
+			result = await app.client.conversations.history({
+				token: token,
+				channel: id,
+				oldest: Math.floor(Date.now() / 1000) - 86400, //debug: 1596326400, actual: Math.floor(Date.now() / 1000) - 86400
+				inclusive: false
+			});
+		} else if (id == "C01BZ7V0207") {
+			result = await app.client.conversations.replies({
+				token: token,
+				channel: id,
+				ts: '1602496865.003000',
+				limit: 10,
+				oldest: Math.floor(Date.now() / 1000) - 86400, //debug: 1596326400, actual: Math.floor(Date.now() / 1000) - 86400
+				inclusive: false
+			});
+			// console.log(result);
+		}
+		let index = id == "CDJMS683D" ? result.messages.length - 2 : 2
+		const number = extractNumber(result.messages[index].text);
 		return number - 1;
 	} catch (error) {
 		console.error(error);
@@ -64,12 +90,12 @@ async function fetchOldest(id) {
 async function publishMessage(id, text) {
 	try {
 		let options = {
-				token: token,
-				channel: id,
-				text: text
-			}
-		if (id == "CDJMS683D") {
-			options['thread_ts'] = 1602496865003000
+			token: token,
+			channel: id,
+			text: text
+		}
+		if (id == "C01BZ7V0207") {
+			options['thread_ts'] = '1602496865.003000'
 		}
 		const result = await app.client.chat.postMessage(options);
 	} catch (error) {
@@ -122,10 +148,11 @@ async function addData(db, object) {
 
 async function getStats(id) {
 	try {
+		let obj;
 		if (id == "CDJMS683D") {
-			let obj = await base('stats').find('rec2XI8QAsPr7EMVB');
+			obj = await base('stats').find('rec2XI8QAsPr7EMVB');
 		} else if (id == "C01BZ7V0207") {
-			let obj = await base('thread stats').find('recBljY8vBdaNK8kq');
+			obj = await base('thread_stats').find('recBljY8vBdaNK8kq');
 		}
 		return {
 			id: obj.id,
@@ -141,13 +168,20 @@ async function report(channel) {
 	let latest = await fetchLatest(channel);
 	let diff = latest - oldest;
 	let db = channel == "CDJMS683D" ? 'increase' : 'thread';
-	addData(db, {
+	let dataArray = {
 		"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
-		"increase": diff,
-		"stats": [
+		"increase": diff
+	}
+	if (channel == "CDJMS683D") {
+		dataArray.stats = [
 			"rec2XI8QAsPr7EMVB"
 		]
-	});
+	} else if (channel == "C01BZ7V0207") {
+		dataArray.thread_stats = [
+			"recBljY8vBdaNK8kq"
+		]
+	}
+	addData(db, dataArray);
 	let newStats = await getStats(channel);
 	averageSpeed = newStats.fields.average.toFixed(3);
 	let thousandsGoal = Math.ceil(latest / 1000) * 1000;
@@ -175,9 +209,16 @@ async function report(channel) {
 		"* \n :fastparrot: KEEP IT GOING GUYS!";
 	if (pastThousandsGoal > oldest && pastThousandsGoal <= latest) {
 		let messageWithCelebration = ":tada: YAY! We've went past " + pastThousandsGoal + "! :tada: \n" + message;
-		publishMessage(channel, messageWithCelebration); //'C017W4PHYKS' for debugging, channel for actual
+		
+		publishMessage(channel, messageWithCelebration); 
+		// publishMessage('C017W4PHYKS', messageWithCelebration);
+
+		//'C017W4PHYKS' for debugging, channel for actual
 	} else {
-		publishMessage(channel, message); //'C017W4PHYKS' for debugging, channel for actual
+		// publishMessage('C017W4PHYKS', message);
+		publishMessage(channel, message);
+
+		//'C017W4PHYKS' for debugging, channel for actual
 	}
 
 };
@@ -215,8 +256,13 @@ app.event('message', async (body) => {
 	// Start your app
 	try {
 		await app.start(process.env.PORT || 3000);
-		let j = schedule.scheduleJob('0 0 * * *', () => { report(main) }); // */15 * * * * * for debugging, 0 0 * * * actual
+		let j = schedule.scheduleJob('0 0 * * *', () => { report(main) }); 
+		// let j = schedule.scheduleJob('*/15 * * * * *', () => { report(main) });
+
 		let k = schedule.scheduleJob('0 0 * * *', () => { report(thread) });
+		// let k = schedule.scheduleJob('*/15 * * * * *', () => { report(thread) });
+
+		// */15 * * * * * for debugging, 0 0 * * * actual
 	} catch (error) {
 		console.error(error);
 		publishMessage('C017W4PHYKS', error)
