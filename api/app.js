@@ -131,13 +131,13 @@ async function report() {
 	let oldest = await fetchOldest(channel);
 	let latest = await fetchLatest(channel);
 	let diff = latest - oldest;
-	// addData('increase', {
-	// 	"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
-	// 	"increase": diff,
-	// 	"stats": [
-  //       "rec2XI8QAsPr7EMVB"
-  //     ]
-	// })
+	addData('increase', {
+		"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
+		"increase": diff,
+		"stats": [
+        "rec2XI8QAsPr7EMVB"
+      ]
+	})
 	let newStats = await getStats();
 	averageSpeed = newStats.fields.average.toFixed(3);
 	let thousandsGoal = Math.ceil(latest / 1000) * 1000;
