@@ -201,19 +201,6 @@ app.event('message', async (body) => {
 	}
 });
 
-app.command('/countstatus', async ({ command, ack, respond }) => {
-	await ack()
-	const channel = 'CDJMS683D'
-
-	let oldest = await fetchOldest(channel)
-	let latest = await fetchLatest(channel)
-
-	await respond({
-		text: `The day's current progress is *${latest - oldest}*!`,
-		response_type: 'ephemeral'
-	})
-});
-
 (async (req, res) => {
 	// Start your app
 	try {
