@@ -1,6 +1,7 @@
 // Require the Bolt package (github.com/slackapi/bolt)
 const { App } = require("@slack/bolt");
-const keep_alive = require('./keep_alive.js')
+const keep_alive = require('./keep_alive.js');
+const addQuotes = require('./quotes.js');
 const schedule = require('node-schedule');
 const moment = require('moment');
 const token = process.env.SLACK_BOT_TOKEN;
@@ -14,6 +15,8 @@ const base = Airtable.base('appogmRaVRo5ElVH7');
 let speedArr = [];
 let latest;
 let averageSpeed;
+
+addQuotes();
 
 const app = new App({
 	token: token,
@@ -146,28 +149,20 @@ async function report() {
 	let pastThousandsGoal = Math.floor(latest / 1000) * 1000;
 	let tenThousandsTime = predictTime(tenThousandsGoal, latest);
 	let message =
-		"Nice! Today we've went from *" +
-		oldest +
-		"* to *" +
-		latest +
-		"*! \n - :arrow_upper_right: The day's progress: *+" +
-		diff +
-		"*\n - :chart_with_upwards_trend: Average daily speed: *" +
-		averageSpeed +
-		"*\n - :round_pushpin: At the avg speed, we'll reach " +
-		thousandsGoal +
-		" *" +
-		thousandsTime +
-		"*\n - :calendar: At the avg speed, we'll reach " +
-		tenThousandsGoal +
-		" *" +
-		tenThousandsTime +
-		"* \n :fastparrot: KEEP IT GOING GUYS!";
+		`Good evening, my underlings! You have done a _brilliant_ job with the counting. Mmm. Yes. Numbers are savory. 
+		Today we've went from *${oldest}* to *${latest}*!
+		- :arrow_upper_right: The day's progress: *+${diff}*
+		- :chart_with_upwards_trend: Average daily speed: *${averageSpeed}*
+		- :round_pushpin: At the avg speed, we'll reach ${thousandsGoal} *${thousandsTime}* 
+		- :calendar: At the avg speed, we'll reach ${tenThousandsGoal} *${tenThousandsTime}* 
+		:bat: Lovely work, my followers! Keep on quenching my thirst for numbers!`;
 	if (pastThousandsGoal > oldest && pastThousandsGoal <= latest) {
-		let messageWithCelebration = ":tada: YAY! We've went past " + pastThousandsGoal + "! :tada: \n" + message;
-		publishMessage(channel, messageWithCelebration); //'C017W4PHYKS' for debugging, channel for actual
+		let messageWithCelebration = `:tada: Congratulations! We've went past ${pastThousandsGoal}! :tada:` + message;
+		publishMessage(channel, messageWithCelebration); 
+		// publishMessage('C017W4PHYKS', messageWithCelebration);
 	} else {
-		publishMessage(channel, message); //'C017W4PHYKS' for debugging, channel for actual
+		publishMessage(channel, message);
+		// publishMessage('C017W4PHYKS', message);
 	}
 
 };
@@ -205,8 +200,8 @@ app.event('message', async (body) => {
 	// Start your app
 	try {
 		await app.start(process.env.PORT || 3000);
-		let j = schedule.scheduleJob('0 0 * * *', report); // */15 * * * * * for debugging, 0 0 * * * actual
-		publishMessage('C017W4PHYKS', 'running every midnight!')
+		let j = schedule.scheduleJob('0 0 * * *', report);
+		// let j = schedule.scheduleJob('*/15 * * * * *', report);
 	} catch (error) {
 		console.error(error);
 	}
