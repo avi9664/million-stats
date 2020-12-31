@@ -14,7 +14,6 @@ Airtable.configure({
 const base = Airtable.base('appogmRaVRo5ElVH7');
 let speedArr = [];
 let latest;
-let averageSpeed;
 
 addQuotes();
 
@@ -118,15 +117,21 @@ async function addData(db, object) {
 	})
 }
 
-async function getStats() {
+async function getAverage() {
 	try {
-		let obj = await base('stats').find('rec2XI8QAsPr7EMVB');
-		return {
-        id: obj.id,
-        fields: obj.fields,
-    };
+		const obj = await base('increase')
+			.select({
+				maxRecords: 30,
+				sort: [{ field: 'Date', direction: 'desc' }]
+			})
+			.firstPage();
+
+		let sum = 0;
+		obj.forEach((item) => (sum += item.fields.increase));
+
+		return sum / 30;
 	} catch (error) {
-		console.error(error)
+		console.error(error);
 	}
 }
 
@@ -141,18 +146,16 @@ async function report() {
         "rec2XI8QAsPr7EMVB"
       ]
 	})
-	let newStats = await getStats();
-	averageSpeed = newStats.fields.average.toFixed(3);
+	let averageSpeed = await getAverage();
 	let thousandsGoal = Math.ceil(latest / 1000) * 1000;
-	let thousandsTime = predictTime(thousandsGoal, latest);
+	let thousandsTime = predictTime(thousandsGoal, latest, averageSpeed);
 	let tenThousandsGoal = Math.ceil(latest / 5000) * 5000;
 	let pastThousandsGoal = Math.floor(latest / 1000) * 1000;
-	let tenThousandsTime = predictTime(tenThousandsGoal, latest);
+	let tenThousandsTime = predictTime(tenThousandsGoal, latest, averageSpeed);
 	let message =
 		`Good evening, my underlings! You have done a _brilliant_ job with the counting. Mmm. Yes. Numbers are savory. 
 		Today we've went from *${oldest}* to *${latest}*!
-		- :arrow_upper_right: The day's progress: *+${diff}*
-		- :chart_with_upwards_trend: Average daily speed: *${averageSpeed}*
+		- :chart_with_upwards_trend: Average daily speed: *${Math.round(averageSpeed)}*
 		- :round_pushpin: At the avg speed, we'll reach ${thousandsGoal} *${thousandsTime}* 
 		- :calendar: At the avg speed, we'll reach ${tenThousandsGoal} *${tenThousandsTime}* 
 		:bat: Lovely work, my followers! Keep on quenching my thirst for numbers!`;
@@ -167,7 +170,7 @@ async function report() {
 
 };
 
-function predictTime(goal, recent) {
+function predictTime(goal, recent, averageSpeed) {
 	let daysLeft = (goal - recent) / averageSpeed;
 	let unix = new Date(Date.now() + daysLeft * 86400000);
 	return moment(unix).fromNow();
