@@ -38,9 +38,16 @@ async function fetchLatest(id) {
 		const result = await app.client.conversations.history({
 			token: token,
 			channel: id,
-			limit: 1,
+			limit: 100,
 		});
-		const number = extractNumber(result.messages[0].text)
+		let number;
+		for (let x = 0; x < result.messages.length; x++) {
+			number = extractNumber(
+				result.messages[x].text,
+			);
+
+			if (!isNaN(number)) break;
+		}
 		return number;
 	} catch (error) {
 		console.error(error);
@@ -49,14 +56,20 @@ async function fetchLatest(id) {
 
 async function fetchOldest(id) {
 	try {
-		let last24Hrs;
 		const result = await app.client.conversations.history({
 			token: token,
 			channel: id,
-			oldest: Math.floor(Date.now() / 1000) - 86400, //debug: 1596326400, actual: Math.floor(Date.now() / 1000) - 86400
-			inclusive: false
+			oldest: Math.floor(Date.now() / 1000) - 86400, //debug: 1609295166, actual: Math.floor(Date.now() / 1000) - 86400
+			inclusive: false,
 		});
-		const number = extractNumber(result.messages[result.messages.length - 2].text);
+		let number;
+		for (let x = result.messages.length - 2; x >= 0 ; x--) {
+			number = extractNumber(
+				result.messages[x].text,
+			);
+
+			if (!isNaN(number)) break;
+		}
 		return number - 1;
 	} catch (error) {
 		console.error(error);
