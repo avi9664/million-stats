@@ -2,9 +2,9 @@
   "name": "bolt-app-template",
   "version": "0.0.1",
   "description": "A basic template to spin up a Bolt app for Slack",
-  "main": "app.js",
+  "main": "api/app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node api/app.js"
   },
   "dependencies": {
     "@slack/bolt": "^2.2.3",
