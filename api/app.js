@@ -155,6 +155,7 @@ async function report() {
 	let message =
 		`Good evening, my underlings! You have done a _brilliant_ job with the counting. Mmm. Yes. Numbers are savory. 
 		Today we've went from *${oldest}* to *${latest}*!
+		- :arrow_upper_right: The day's progress: *+${diff}*
 		- :chart_with_upwards_trend: Average daily speed: *${Math.round(averageSpeed)}*
 		- :round_pushpin: At the avg speed, we'll reach ${thousandsGoal} *${thousandsTime}* 
 		- :calendar: At the avg speed, we'll reach ${tenThousandsGoal} *${tenThousandsTime}* 
