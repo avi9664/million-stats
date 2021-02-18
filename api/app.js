@@ -15,7 +15,8 @@ const base = Airtable.base('appogmRaVRo5ElVH7');
 let speedArr = [];
 let latest;
 
-addQuotes();
+const goalDate = '03/20/2021';
+const goalNumber = 200000;
 
 const app = new App({
 	token: token,
@@ -162,24 +163,23 @@ async function report() {
 	let averageSpeed = await getAverage();
 	let thousandsGoal = Math.ceil(latest / 1000) * 1000;
 	let thousandsTime = predictTime(thousandsGoal, latest, averageSpeed);
-	let tenThousandsGoal = Math.ceil(latest / 5000) * 5000;
+	// let tenThousandsGoal = Math.ceil(latest / 5000) * 5000;
 	let pastThousandsGoal = Math.floor(latest / 1000) * 1000;
-	let tenThousandsTime = predictTime(tenThousandsGoal, latest, averageSpeed);
+	// let tenThousandsTime = predictTime(tenThousandsGoal, latest, averageSpeed);
+	let goals = predictSpeed(goalDate, goalNumber, latest);
 	let message =
-		`Good evening, my underlings! You have done a _brilliant_ job with the counting. Mmm. Yes. Numbers are savory. 
-		Today we've went from *${oldest}* to *${latest}*!
+		`Today we've went from *${oldest}* to *${latest}*!
 		- :arrow_upper_right: The day's progress: *+${diff}*
 		- :chart_with_upwards_trend: Average daily speed: *${Math.round(averageSpeed)}*
-		- :round_pushpin: At the avg speed, we'll reach ${thousandsGoal} *${thousandsTime}* 
-		- :calendar: At the avg speed, we'll reach ${tenThousandsGoal} *${tenThousandsTime}* 
-		:bat: Lovely work, my followers! Keep on quenching my thirst for numbers!`;
+		- :round_pushpin: Our current goal is to reach *${goalNumber}* by *${moment(goalDate).format('MMMM D')}.*
+		- :calendar: If we want to get there on time, we need to count by at least *+${Math.ceil(goals[1])}* a day.`;
 	if (pastThousandsGoal > oldest && pastThousandsGoal <= latest) {
-		let messageWithCelebration = `:tada: Congratulations! We've went past ${pastThousandsGoal}! :tada:` + message;
-		publishMessage(channel, messageWithCelebration); 
-		// publishMessage('C017W4PHYKS', messageWithCelebration);
+		let messageWithCelebration = `:tada: Congratulations! We've went past ${pastThousandsGoal}! :tada: \n` + message;
+		publishMessage(channel, addQuotes(messageWithCelebration, goals, averageSpeed)); 
+		// publishMessage('C017W4PHYKS', addQuotes(messageWithCelebration, goals, averageSpeed));
 	} else {
-		publishMessage(channel, message);
-		// publishMessage('C017W4PHYKS', message);
+		publishMessage(channel, addQuotes(message, goals, averageSpeed));
+		// publishMessage('C017W4PHYKS', addQuotes(message, goals, averageSpeed));
 	}
 
 };
@@ -188,6 +188,16 @@ function predictTime(goal, recent, averageSpeed) {
 	let daysLeft = (goal - recent) / averageSpeed;
 	let unix = new Date(Date.now() + daysLeft * 86400000);
 	return moment(unix).fromNow();
+}
+
+function predictSpeed(goalDate, goalNumber, currentNumber) {
+	let today = new Date();
+	let goal = new Date(goalDate);
+	let timeRemaining = Math.abs(goal - today);
+	let daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+	let neededSpeed = (goalNumber - currentNumber) / daysRemaining;
+	return [daysRemaining, neededSpeed];
+
 }
 
 app.event('message', async (body) => {
