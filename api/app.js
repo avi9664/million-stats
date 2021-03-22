@@ -227,6 +227,17 @@ app.event('message', async (body) => {
 	}
 });
 
+app.event('app_mention', async (body) => {
+	try {
+		let e = body.event;
+		let c = e.channel;
+		
+		publishMessage(c, "DO NOT BOTHER ME. I AM SLEEPING.")
+	} catch (err) {
+		console.error(err)
+	}
+});
+
 (async (req, res) => {
 	// Start your app
 	try {
