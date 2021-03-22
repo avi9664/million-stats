@@ -15,7 +15,7 @@ const base = Airtable.base('appogmRaVRo5ElVH7');
 let speedArr = [];
 let latest;
 
-const goalDate = '03/20/2021';
+const goalDate = '06/20/2021';
 const goalNumber = 200000;
 
 const app = new App({
@@ -172,7 +172,8 @@ async function report() {
 		- :arrow_upper_right: The day's progress: *+${diff}*
 		- :chart_with_upwards_trend: Average daily speed: *${Math.round(averageSpeed)}*
 		- :round_pushpin: Our current goal is to reach *${goalNumber}* by *${moment(goalDate).format('MMMM D')}.*
-		- :calendar: If we want to get there on time, we need to count by at least *+${Math.ceil(goals[1])}* a day.`;
+		- :calendar: If we want to get there on time, we need to count by at least *+${Math.ceil(goals[1])}* a day.
+		- :1234: Here's a number to aim for today: *${Math.ceil(parseInt(latest) + parseInt(goals[1]))}*`;
 	if (pastThousandsGoal > oldest && pastThousandsGoal <= latest) {
 		let messageWithCelebration = `:tada: Congratulations! We've went past ${pastThousandsGoal}! :tada: \n` + message;
 		publishMessage(channel, addQuotes(messageWithCelebration, goals, averageSpeed)); 
@@ -214,8 +215,11 @@ app.event('message', async (body) => {
 				pinMessage(c, ts);
 			}
 			let l = number.length;
-			if (number[l - 2] == 6 && number[l - 1] == 9) {
+			if (number.slice(-2) === '69') {
 				postReaction(c, "ok_hand", ts);
+			}
+			if (number.slice(-3) === '666') {
+				postReaction(c, "smiling_imp", ts)
 			}
 		}
 	} catch (err) {
