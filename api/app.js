@@ -1,6 +1,6 @@
 // Require the Bolt package (github.com/slackapi/bolt)
 const { App } = require("@slack/bolt");
-const keep_alive = require('./keep_alive.js');
+// const keep_alive = require('./keep_alive.js');
 const addQuotes = require('./quotes.js');
 const schedule = require('node-schedule');
 const moment = require('moment');
@@ -204,6 +204,7 @@ function predictSpeed(goalDate, goalNumber, currentNumber) {
 app.event('message', async (body) => {
 	try {
 		let e = body.event;
+		console.log(e);
 		if (typeof e.subtype === "undefined" && /\d/.test(e.text[0])) {
 			let number = extractNumber(e.text);
 			let ts = e.ts;
@@ -220,6 +221,8 @@ app.event('message', async (body) => {
 			}
 			if (number.slice(-3) === '666') {
 				postReaction(c, "smiling_imp", ts)
+			} if (number.slice(-3) === number.slice(0, 3).split("").reverse().join("")) {
+				postReaction(c, "tacocat", ts)
 			}
 		}
 	} catch (err) {
@@ -231,7 +234,7 @@ app.event('app_mention', async (body) => {
 	try {
 		let e = body.event;
 		let c = e.channel;
-		
+		console.log('pong');
 		publishMessage(c, "DO NOT BOTHER ME. I AM SLEEPING.")
 	} catch (err) {
 		console.error(err)
