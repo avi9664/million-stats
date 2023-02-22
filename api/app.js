@@ -5,7 +5,7 @@ const addQuotes = require('./quotes.js');
 const schedule = require('node-schedule');
 const moment = require('moment');
 const token = process.env.SLACK_BOT_TOKEN;
-const channel = "CDJMS683D"; 
+const channel = "CDJMS683D";
 const Airtable = require('airtable');
 Airtable.configure({
 	endpointUrl: 'https://api.airtable.com',
@@ -15,8 +15,8 @@ const base = Airtable.base('appogmRaVRo5ElVH7');
 let speedArr = [];
 let latest;
 
-const goalDate = '06/20/2021';
-const goalNumber = 200000;
+const goalDate = '10/31/2023';
+const goalNumber = 300000;
 
 const app = new App({
 	token: token,
@@ -63,7 +63,7 @@ async function fetchOldest(id) {
 			inclusive: false,
 		});
 		let number;
-		for (let x = result.messages.length - 2; x >= 0 ; x--) {
+		for (let x = result.messages.length - 2; x >= 0; x--) {
 			number = extractNumber(
 				result.messages[x].text,
 			);
@@ -122,7 +122,7 @@ function findMean(arr) {
 }
 
 async function addData(db, object) {
-	base(db).create(object, function(err, record){
+	base(db).create(object, function(err, record) {
 		if (err) {
 			console.error(err);
 			return;
@@ -157,8 +157,9 @@ async function report() {
 		"Date": moment().subtract(1, "days").format("YYYY-MM-DD"),
 		"increase": diff,
 		"stats": [
-        "rec2XI8QAsPr7EMVB"
-      ]
+			"rec2XI8QAsPr7EMVB"
+		],
+		"start": oldest,
 	})
 	let averageSpeed = await getAverage();
 	let thousandsGoal = Math.ceil(latest / 1000) * 1000;
@@ -176,7 +177,7 @@ async function report() {
 		- :1234: Here's a number to aim for today: *${Math.ceil(parseInt(latest) + parseInt(goals[1]))}*`;
 	if (pastThousandsGoal > oldest && pastThousandsGoal <= latest) {
 		let messageWithCelebration = `:tada: Congratulations! We've went past ${pastThousandsGoal}! :tada: \n` + message;
-		publishMessage(channel, addQuotes(messageWithCelebration, goals, averageSpeed)); 
+		publishMessage(channel, addQuotes(messageWithCelebration, goals, averageSpeed));
 		// publishMessage('C017W4PHYKS', addQuotes(messageWithCelebration, goals, averageSpeed));
 	} else {
 		publishMessage(channel, addQuotes(message, goals, averageSpeed));
@@ -234,8 +235,18 @@ app.event('app_mention', async (body) => {
 	try {
 		let e = body.event;
 		let c = e.channel;
-		console.log('pong');
-		publishMessage(c, "DO NOT BOTHER ME. I AM SLEEPING.")
+		let choose = Math.floor(Math.random() * 8);
+		let messageArray = [
+			"DO NOT BOTHER ME. I AM SLEEPING.",
+			"AAAAAAAA!!! THE SUN! *pulls curtains closed* I nearly got _burnt_ that time, you pathetic little minions! Next time, DO NOT WAKE ME.",
+			"What do you want, human weakling?",
+			"Hrmh? Is Count von Corgo pissing on the lawn _again_?",
+			"What is it? Are you going too slow that you need another supernatural being to help you _speed-count_? If so, you've found the wrong one, because this supernatural being is _trying to sleep!_",
+			"HISSSSSSSSSSS!",
+			"Minions, I had _three hours_ of sleep yesterday, and I am trying to catch up. Please, _leave me alone to sleep._",
+		]
+		
+		publishMessage(c, messageArray[choose])
 	} catch (err) {
 		console.error(err)
 	}
